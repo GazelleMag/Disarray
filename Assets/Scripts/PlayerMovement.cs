@@ -1,17 +1,27 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Mirror;
 
-public class PlayerMovement : MonoBehaviour
+public class PlayerMovement : NetworkBehaviour
 {
   public CharacterController characterController;
   public Transform cam;
 
   public float movementSpeed = 6f;
 
+  void Start()
+  {
+    cam = GameObject.Find("Main Camera").transform;
+  }
+
   void Update()
   {
-    Move();
+    if (isLocalPlayer)
+    {
+      Move();
+    }
+
   }
 
   void Move()
