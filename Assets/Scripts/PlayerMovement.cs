@@ -2,17 +2,21 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Mirror;
+using Cinemachine;
 
 public class PlayerMovement : NetworkBehaviour
 {
   public CharacterController characterController;
-  public Transform cam;
+  public GameObject cam;
+  //public GameObject vcam;
 
   public float movementSpeed = 6f;
 
   void Start()
   {
-    cam = GameObject.Find("Main Camera").transform;
+    cam = GameObject.Find("Main Camera");
+    Debug.Log(cam);
+    //vcam = transform.Find("Third Person Camera").gameObject;
   }
 
   void Update()
@@ -44,7 +48,7 @@ public class PlayerMovement : NetworkBehaviour
 
   Vector3 GetPlayerCamDirection(Vector3 inputDirection)
   {
-    float targetAngle = Mathf.Atan2(inputDirection.x, inputDirection.z) * Mathf.Rad2Deg + cam.eulerAngles.y;
+    float targetAngle = Mathf.Atan2(inputDirection.x, inputDirection.z) * Mathf.Rad2Deg + cam.transform.eulerAngles.y;
     transform.rotation = Quaternion.Euler(0f, targetAngle, 0f);
     return Quaternion.Euler(0f, targetAngle, 0f) * Vector3.forward;
   }

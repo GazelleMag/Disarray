@@ -118,6 +118,7 @@ MonoBehaviour:
   syncInterval: 0.1
   characterController: {fileID: 2039613022388065404}
   cam: {fileID: 0}
+  vcam: {fileID: 0}
   movementSpeed: 6
 --- !u!143 &2039613022388065404
 CharacterController:
