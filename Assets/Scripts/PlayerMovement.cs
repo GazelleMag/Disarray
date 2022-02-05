@@ -8,15 +8,27 @@ public class PlayerMovement : NetworkBehaviour
 {
   public CharacterController characterController;
   public GameObject cam;
-  //public GameObject vcam;
+  public GameObject vcam;
+  public CinemachineFreeLook freeLookCam;
 
   public float movementSpeed = 6f;
 
   void Start()
   {
     cam = GameObject.Find("Main Camera");
-    Debug.Log(cam);
-    //vcam = transform.Find("Third Person Camera").gameObject;
+    vcam = GameObject.Find("Third Person Camera");
+    freeLookCam = vcam.GetComponent<CinemachineFreeLook>();
+    //vcam = GetComponentInChildren<CinemachineFreeLook>();
+    //cam.enabled = false;
+    if (isLocalPlayer) 
+    {
+      /*cam.enabled = true;
+      vcam.LookAt = transform;
+      vcam.Follow = transform;*/
+
+      freeLookCam.LookAt = transform;
+      freeLookCam.Follow = transform;
+    }
   }
 
   void Update()
