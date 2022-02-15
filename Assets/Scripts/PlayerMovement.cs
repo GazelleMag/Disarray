@@ -7,25 +7,26 @@ using Cinemachine;
 public class PlayerMovement : NetworkBehaviour
 {
   public CharacterController characterController;
+  public PlayerAnimationController animationController;
+
   public GameObject cam;
   public GameObject vcam;
   public CinemachineFreeLook freeLookCam;
 
   public float movementSpeed = 6f;
+  public float turnSmoothTime = 0.1f;
+  float turnSmoothVelocity;
 
   void Start()
   {
+    animationController = GameObject.Find("PlayerModel").GetComponent<PlayerAnimationController>();
+
     cam = GameObject.Find("Main Camera");
     vcam = GameObject.Find("Third Person Camera");
     freeLookCam = vcam.GetComponent<CinemachineFreeLook>();
-    //vcam = GetComponentInChildren<CinemachineFreeLook>();
-    //cam.enabled = false;
-    if (isLocalPlayer) 
-    {
-      /*cam.enabled = true;
-      vcam.LookAt = transform;
-      vcam.Follow = transform;*/
 
+    if (isLocalPlayer)
+    {
       freeLookCam.LookAt = transform;
       freeLookCam.Follow = transform;
     }
@@ -48,6 +49,11 @@ public class PlayerMovement : NetworkBehaviour
     {
       Vector3 camDirection = GetPlayerCamDirection(inputDirection);
       characterController.Move(camDirection.normalized * movementSpeed * Time.deltaTime);
+      animationController.WalkingAnimTransition();
+    }
+    else
+    {
+      animationController.IdleAnimTransition();
     }
   }
 
@@ -61,7 +67,8 @@ public class PlayerMovement : NetworkBehaviour
   Vector3 GetPlayerCamDirection(Vector3 inputDirection)
   {
     float targetAngle = Mathf.Atan2(inputDirection.x, inputDirection.z) * Mathf.Rad2Deg + cam.transform.eulerAngles.y;
-    transform.rotation = Quaternion.Euler(0f, targetAngle, 0f);
+    float angle = Mathf.SmoothDampAngle(transform.eulerAngles.y, targetAngle, ref turnSmoothVelocity, turnSmoothTime);
+    transform.rotation = Quaternion.Euler(0f, angle, 0f);
     return Quaternion.Euler(0f, targetAngle, 0f) * Vector3.forward;
   }
 
