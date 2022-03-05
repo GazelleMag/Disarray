@@ -6,11 +6,6 @@ public class PlayerAnimationController : MonoBehaviour
 {
   public Animator playerAnimator;
 
-  void Update()
-  {
-    transform.localPosition = Vector3.down;
-  }
-
   void Start()
   {
     playerAnimator = GetComponent<Animator>();
