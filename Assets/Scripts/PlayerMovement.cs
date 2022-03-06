@@ -68,7 +68,7 @@ public class PlayerMovement : NetworkBehaviour
   {
     float targetAngle = Mathf.Atan2(inputDirection.x, inputDirection.z) * Mathf.Rad2Deg + cam.transform.eulerAngles.y;
     float angle = Mathf.SmoothDampAngle(transform.eulerAngles.y, targetAngle, ref turnSmoothVelocity, turnSmoothTime);
-    transform.rotation = Quaternion.Euler(0f, angle, 0f);
+    transform.localRotation = Quaternion.Euler(0f, angle, 0f);
     return Quaternion.Euler(0f, targetAngle, 0f) * Vector3.forward;
   }
 
