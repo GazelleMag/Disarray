@@ -19,14 +19,13 @@ public class PlayerMovement : NetworkBehaviour
 
   void Start()
   {
-    animationController = GameObject.Find("PlayerModel").GetComponent<PlayerAnimationController>();
-
     cam = GameObject.Find("Main Camera");
     vcam = GameObject.Find("Third Person Camera");
     freeLookCam = vcam.GetComponent<CinemachineFreeLook>();
 
     if (isLocalPlayer)
     {
+
       freeLookCam.LookAt = transform;
       freeLookCam.Follow = transform;
     }
