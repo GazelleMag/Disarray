@@ -12,6 +12,7 @@ public class PlayerMovement : NetworkBehaviour
   public GameObject cam;
   public GameObject vcam;
   public CinemachineFreeLook freeLookCam;
+  //public CinemachineStateDrivenCamera stateDrivenCam;
 
   public float movementSpeed = 6f;
   public float turnSmoothTime = 0.1f;
@@ -22,10 +23,10 @@ public class PlayerMovement : NetworkBehaviour
     cam = GameObject.Find("Main Camera");
     vcam = GameObject.Find("Third Person Camera");
     freeLookCam = vcam.GetComponent<CinemachineFreeLook>();
+    //stateDrivenCam = vcam.GetComponent<CinemachineStateDrivenCamera>();
 
     if (isLocalPlayer)
     {
-
       freeLookCam.LookAt = transform;
       freeLookCam.Follow = transform;
     }
