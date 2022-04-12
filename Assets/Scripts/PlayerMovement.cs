@@ -8,27 +8,36 @@ public class PlayerMovement : NetworkBehaviour
 {
   public CharacterController characterController;
   public PlayerAnimationController animationController;
+  private Animator cinemachineAnimator;
 
   public GameObject cam;
   public GameObject vcam;
-  public CinemachineFreeLook freeLookCam;
-  //public CinemachineStateDrivenCamera stateDrivenCam;
+  public GameObject lcam;
+  public GameObject scam;
+  private CinemachineFreeLook freeLookCam;
+  private CinemachineVirtualCamera lockOnCam;
 
   public float movementSpeed = 6f;
   public float turnSmoothTime = 0.1f;
   float turnSmoothVelocity;
+  private bool thirdPersonCamera;
 
   void Start()
   {
     cam = GameObject.Find("Main Camera");
     vcam = GameObject.Find("Third Person Camera");
+    lcam = GameObject.Find("Lock On Camera");
+    scam = GameObject.Find("State Driven Camera");
     freeLookCam = vcam.GetComponent<CinemachineFreeLook>();
-    //stateDrivenCam = vcam.GetComponent<CinemachineStateDrivenCamera>();
+    lockOnCam = lcam.GetComponent<CinemachineVirtualCamera>();
+    cinemachineAnimator = scam.GetComponent<Animator>();
+    thirdPersonCamera = false;
 
     if (isLocalPlayer)
     {
       freeLookCam.LookAt = transform;
       freeLookCam.Follow = transform;
+      lockOnCam.Follow = transform;
     }
   }
 
@@ -37,6 +46,10 @@ public class PlayerMovement : NetworkBehaviour
     if (isLocalPlayer)
     {
       Move();
+      if (Input.GetKeyDown("space"))
+      {
+        SwitchState();
+      }
     }
 
   }
@@ -70,6 +83,19 @@ public class PlayerMovement : NetworkBehaviour
     float angle = Mathf.SmoothDampAngle(transform.eulerAngles.y, targetAngle, ref turnSmoothVelocity, turnSmoothTime);
     transform.localRotation = Quaternion.Euler(0f, angle, 0f);
     return Quaternion.Euler(0f, targetAngle, 0f) * Vector3.forward;
+  }
+
+  private void SwitchState()
+  {
+    if (thirdPersonCamera)
+    {
+      cinemachineAnimator.Play("ThirdPersonCamera");
+    }
+    else
+    {
+      cinemachineAnimator.Play("LockOnCamera");
+    }
+    thirdPersonCamera = !thirdPersonCamera;
   }
 
 }

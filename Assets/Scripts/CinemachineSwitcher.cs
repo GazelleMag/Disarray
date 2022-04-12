@@ -1,15 +1,28 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Cinemachine;
 
 public class CinemachineSwitcher : MonoBehaviour
 {
   private Animator cinemachineAnimator;
   private bool thirdPersonCamera = true;
+  private CinemachineStateDrivenCamera stateDrivenCam;
+  private CinemachineVirtualCamera lockOnCam;
+  private GameObject player;
 
   private void Awake()
   {
     cinemachineAnimator = GetComponent<Animator>();
+    stateDrivenCam = GetComponent<CinemachineStateDrivenCamera>();
+    lockOnCam = stateDrivenCam.GetComponentInChildren<CinemachineVirtualCamera>();
+  }
+
+  void Start()
+  {
+
+    player = GameObject.Find("Player");
+    lockOnCam.Follow = player.transform;
   }
 
   void Update()
@@ -22,7 +35,6 @@ public class CinemachineSwitcher : MonoBehaviour
 
   private void SwitchState()
   {
-    Debug.Log("Im clicking!");
     if (thirdPersonCamera)
     {
       cinemachineAnimator.Play("ThirdPersonCamera");
