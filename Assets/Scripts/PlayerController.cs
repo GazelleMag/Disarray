@@ -1,10 +1,8 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using Mirror;
 using Cinemachine;
 
-public class PlayerMovement : NetworkBehaviour
+public class PlayerController : NetworkBehaviour
 {
   public CharacterController characterController;
   public PlayerAnimationController animationController;
@@ -14,6 +12,7 @@ public class PlayerMovement : NetworkBehaviour
   public GameObject vcam;
   public GameObject lcam;
   public GameObject scam;
+
   private CinemachineFreeLook freeLookCam;
   private CinemachineVirtualCamera lockOnCam;
 
@@ -24,21 +23,7 @@ public class PlayerMovement : NetworkBehaviour
 
   void Start()
   {
-    cam = GameObject.Find("Main Camera");
-    vcam = GameObject.Find("Third Person Camera");
-    lcam = GameObject.Find("Lock On Camera");
-    scam = GameObject.Find("State Driven Camera");
-    freeLookCam = vcam.GetComponent<CinemachineFreeLook>();
-    lockOnCam = lcam.GetComponent<CinemachineVirtualCamera>();
-    cinemachineAnimator = scam.GetComponent<Animator>();
-    thirdPersonCamera = false;
-
-    if (isLocalPlayer)
-    {
-      freeLookCam.LookAt = transform;
-      freeLookCam.Follow = transform;
-      lockOnCam.Follow = transform;
-    }
+    InitializeCameraProperties();
   }
 
   void Update()
@@ -48,12 +33,12 @@ public class PlayerMovement : NetworkBehaviour
       Move();
       if (Input.GetKeyDown("space"))
       {
-        SwitchState();
+        SwitchCamera();
       }
     }
-
   }
 
+  // MOVEMENT
   void Move()
   {
     Vector3 inputDirection = GetPlayerInputDirection();
@@ -77,7 +62,29 @@ public class PlayerMovement : NetworkBehaviour
     return new Vector3(horizontal, 0f, vertical).normalized;
   }
 
-  Vector3 GetPlayerCamDirection(Vector3 inputDirection)
+  // CAMERA
+  private void InitializeCameraProperties()
+  {
+    cam = GameObject.Find("Main Camera");
+    vcam = GameObject.Find("Third Person Camera");
+    lcam = GameObject.Find("Lock On Camera");
+    scam = GameObject.Find("State Driven Camera");
+
+    freeLookCam = vcam.GetComponent<CinemachineFreeLook>();
+    lockOnCam = lcam.GetComponent<CinemachineVirtualCamera>();
+
+    cinemachineAnimator = scam.GetComponent<Animator>();
+    thirdPersonCamera = false;
+
+    if (isLocalPlayer)
+    {
+      freeLookCam.LookAt = transform;
+      freeLookCam.Follow = transform;
+      lockOnCam.Follow = transform;
+    }
+  }
+
+  private Vector3 GetPlayerCamDirection(Vector3 inputDirection)
   {
     float targetAngle = Mathf.Atan2(inputDirection.x, inputDirection.z) * Mathf.Rad2Deg + cam.transform.eulerAngles.y;
     float angle = Mathf.SmoothDampAngle(transform.eulerAngles.y, targetAngle, ref turnSmoothVelocity, turnSmoothTime);
@@ -85,7 +92,7 @@ public class PlayerMovement : NetworkBehaviour
     return Quaternion.Euler(0f, targetAngle, 0f) * Vector3.forward;
   }
 
-  private void SwitchState()
+  private void SwitchCamera()
   {
     if (thirdPersonCamera)
     {

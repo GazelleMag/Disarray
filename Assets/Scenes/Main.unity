@@ -474,7 +474,6 @@ GameObject:
   - component: {fileID: 187231604}
   - component: {fileID: 187231603}
   - component: {fileID: 187231605}
-  - component: {fileID: 187231606}
   m_Layer: 0
   m_Name: State Driven Camera
   m_TagString: Untagged
@@ -568,18 +567,6 @@ Animator:
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorControllerStateOnDisable: 0
---- !u!114 &187231606
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 187231602}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6ae968772f231fa48bdfd10d8de6dfc1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &381381059
 GameObject:
   m_ObjectHideFlags: 0
@@ -618,7 +605,7 @@ MonoBehaviour:
   m_LookAt: {fileID: 1064080462}
   m_Follow: {fileID: 0}
   m_Lens:
-    FieldOfView: 40
+    FieldOfView: 30
     OrthographicSize: 5
     NearClipPlane: 0.1
     FarClipPlane: 5000
