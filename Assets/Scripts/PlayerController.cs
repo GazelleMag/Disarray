@@ -1,6 +1,7 @@
 using UnityEngine;
 using Mirror;
 using Cinemachine;
+using System.Collections.Generic;
 
 public class PlayerController : NetworkBehaviour
 {
@@ -20,6 +21,10 @@ public class PlayerController : NetworkBehaviour
   public float turnSmoothTime = 0.1f;
   float turnSmoothVelocity;
   private bool thirdPersonCamera;
+
+  public CinemachineTargetGroupManager targetGroupManager;
+
+  private PlayerManager playerManager;
 
   void Start()
   {
@@ -105,4 +110,25 @@ public class PlayerController : NetworkBehaviour
     thirdPersonCamera = !thirdPersonCamera;
   }
 
+  public override void OnStartClient()
+  {
+    if (!isLocalPlayer)
+    {
+      playerManager = GameObject.Find("Player Manager").GetComponent<PlayerManager>();
+      targetGroupManager = GameObject.Find("TargetGroup").GetComponent<CinemachineTargetGroupManager>();
+      playerManager.AddPlayer(gameObject);
+      targetGroupManager.AddPlayer(transform);
+    }
+  }
+
+  public override void OnStopClient()
+  {
+    if (!isLocalPlayer)
+    {
+      playerManager = GameObject.Find("Player Manager").GetComponent<PlayerManager>();
+      targetGroupManager = GameObject.Find("TargetGroup").GetComponent<CinemachineTargetGroupManager>();
+      playerManager.RemovePlayer(gameObject);
+      targetGroupManager.RemovePlayer(transform);
+    }
+  }
 }
