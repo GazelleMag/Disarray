@@ -23,7 +23,6 @@ public class PlayerController : NetworkBehaviour
   private bool thirdPersonCamera;
 
   public CinemachineTargetGroupManager targetGroupManager;
-
   private PlayerManager playerManager;
 
   void Start()
@@ -102,10 +101,13 @@ public class PlayerController : NetworkBehaviour
     if (thirdPersonCamera)
     {
       cinemachineAnimator.Play("ThirdPersonCamera");
+      animationController.NoStanceAnimTransition();
+      
     }
     else
     {
       cinemachineAnimator.Play("LockOnCamera");
+      animationController.StanceAnimTransition();
     }
     thirdPersonCamera = !thirdPersonCamera;
   }

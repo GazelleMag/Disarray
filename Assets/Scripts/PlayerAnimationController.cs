@@ -18,4 +18,14 @@ public class PlayerAnimationController : MonoBehaviour
   {
     playerAnimator.SetBool("Walking", true);
   }
+
+  public void StanceAnimTransition()
+  {
+    playerAnimator.SetBool("Stance", true);
+  }
+
+  public void NoStanceAnimTransition()
+  {
+    playerAnimator.SetBool("Stance", false);
+  }
 }
