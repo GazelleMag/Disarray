@@ -4,7 +4,7 @@ using Mirror;
 
 public class CinemachineTargetGroupManager : MonoBehaviour
 {
-  private CinemachineTargetGroup targetGroup;
+  public CinemachineTargetGroup targetGroup;
 
   void Start()
   {

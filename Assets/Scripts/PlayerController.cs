@@ -20,9 +20,10 @@ public class PlayerController : NetworkBehaviour
   public float movementSpeed = 6f;
   public float turnSmoothTime = 0.1f;
   float turnSmoothVelocity;
-  private bool thirdPersonCamera;
+  private bool lockOnCamera;
 
   public CinemachineTargetGroupManager targetGroupManager;
+  private Transform lockedTargetTransform;
   private PlayerManager playerManager;
 
   void Start()
@@ -38,6 +39,12 @@ public class PlayerController : NetworkBehaviour
       if (Input.GetKeyDown("space"))
       {
         SwitchCamera();
+        GetLockedTarget();
+      }
+
+      if (lockOnCamera)
+      {
+        RotateTowardsLockedTarget();
       }
     }
   }
@@ -78,7 +85,7 @@ public class PlayerController : NetworkBehaviour
     lockOnCam = lcam.GetComponent<CinemachineVirtualCamera>();
 
     cinemachineAnimator = scam.GetComponent<Animator>();
-    thirdPersonCamera = false;
+    lockOnCamera = false;
 
     if (isLocalPlayer)
     {
@@ -98,26 +105,26 @@ public class PlayerController : NetworkBehaviour
 
   private void SwitchCamera()
   {
-    if (thirdPersonCamera)
-    {
-      cinemachineAnimator.Play("ThirdPersonCamera");
-      animationController.NoStanceAnimTransition();
-      
-    }
-    else
+    lockOnCamera = !lockOnCamera;
+    if (lockOnCamera)
     {
       cinemachineAnimator.Play("LockOnCamera");
       animationController.StanceAnimTransition();
+
     }
-    thirdPersonCamera = !thirdPersonCamera;
+    else
+    {
+      cinemachineAnimator.Play("ThirdPersonCamera");
+      animationController.NoStanceAnimTransition();
+    }
   }
 
   public override void OnStartClient()
   {
+    playerManager = GameObject.Find("Player Manager").GetComponent<PlayerManager>();
+    targetGroupManager = GameObject.Find("TargetGroup").GetComponent<CinemachineTargetGroupManager>();
     if (!isLocalPlayer)
     {
-      playerManager = GameObject.Find("Player Manager").GetComponent<PlayerManager>();
-      targetGroupManager = GameObject.Find("TargetGroup").GetComponent<CinemachineTargetGroupManager>();
       playerManager.AddPlayer(gameObject);
       targetGroupManager.AddPlayer(transform);
     }
@@ -125,12 +132,31 @@ public class PlayerController : NetworkBehaviour
 
   public override void OnStopClient()
   {
+    playerManager = GameObject.Find("Player Manager").GetComponent<PlayerManager>();
+    targetGroupManager = GameObject.Find("TargetGroup").GetComponent<CinemachineTargetGroupManager>();
     if (!isLocalPlayer)
     {
-      playerManager = GameObject.Find("Player Manager").GetComponent<PlayerManager>();
-      targetGroupManager = GameObject.Find("TargetGroup").GetComponent<CinemachineTargetGroupManager>();
       playerManager.RemovePlayer(gameObject);
       targetGroupManager.RemovePlayer(transform);
     }
   }
+
+  private void GetLockedTarget() // this needs to be changed for multiple targets
+  {
+    for (int i = 0; i < targetGroupManager.targetGroup.m_Targets.Length; i++)
+    {
+      lockedTargetTransform = targetGroupManager.targetGroup.m_Targets[i].target.transform;
+    }
+  }
+
+  private void RotateTowardsLockedTarget()
+  {
+    if (lockedTargetTransform)
+    {
+      Vector3 direction = lockedTargetTransform.position - transform.position;
+      Quaternion rotation = Quaternion.LookRotation(direction);
+      transform.rotation = rotation;
+    }
+  }
+
 }
