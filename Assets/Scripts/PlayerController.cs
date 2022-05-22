@@ -17,8 +17,8 @@ public class PlayerController : NetworkBehaviour
   private CinemachineFreeLook freeLookCam;
   private CinemachineVirtualCamera lockOnCam;
 
-  public float movementSpeed = 6f;
-  public float turnSmoothTime = 0.1f;
+  private float movementSpeed = 3f;
+  private float turnSmoothTime = 0.1f;
   float turnSmoothVelocity;
   private bool lockOnCamera;
 
@@ -110,12 +110,13 @@ public class PlayerController : NetworkBehaviour
     {
       cinemachineAnimator.Play("LockOnCamera");
       animationController.StanceAnimTransition();
-
+      movementSpeed = 1f;
     }
     else
     {
       cinemachineAnimator.Play("ThirdPersonCamera");
       animationController.NoStanceAnimTransition();
+      movementSpeed = 3f;
     }
   }
 
