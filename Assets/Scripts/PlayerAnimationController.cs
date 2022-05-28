@@ -9,7 +9,37 @@ public class PlayerAnimationController : MonoBehaviour
     playerAnimator = GetComponent<Animator>();
   }
 
-  public void IdleAnimTransition()
+  public void Walking()
+  {
+    playerAnimator.SetBool("Walking", true);
+  }
+
+  public void NotWalking()
+  {
+    playerAnimator.SetBool("Walking", false);
+  }
+
+  public void Stance()
+  {
+    playerAnimator.SetBool("Stance", true);
+  }
+
+  public void NotStance()
+  {
+    playerAnimator.SetBool("Stance", false);
+  }
+
+  public void WalkingLeft()
+  {
+    playerAnimator.SetBool("WalkingLeft", true);
+  }
+
+  public void WalkingRight()
+  {
+    playerAnimator.SetBool("WalkingLeft", false);
+  }
+
+  /*public void IdleAnimTransition()
   {
     playerAnimator.SetBool("Walking", false);
   }
@@ -27,5 +57,5 @@ public class PlayerAnimationController : MonoBehaviour
   public void NoStanceAnimTransition()
   {
     playerAnimator.SetBool("Stance", false);
-  }
+  }*/
 }

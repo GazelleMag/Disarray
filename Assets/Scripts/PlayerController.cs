@@ -1,7 +1,6 @@
 using UnityEngine;
 using Mirror;
 using Cinemachine;
-using System.Collections.Generic;
 
 public class PlayerController : NetworkBehaviour
 {
@@ -58,11 +57,11 @@ public class PlayerController : NetworkBehaviour
     {
       Vector3 camDirection = GetPlayerCamDirection(inputDirection);
       characterController.Move(camDirection.normalized * movementSpeed * Time.deltaTime);
-      animationController.WalkingAnimTransition();
+      animationController.Walking();
     }
     else
     {
-      animationController.IdleAnimTransition();
+      animationController.NotWalking();
     }
   }
 
@@ -70,7 +69,23 @@ public class PlayerController : NetworkBehaviour
   {
     float horizontal = Input.GetAxisRaw("Horizontal");
     float vertical = Input.GetAxisRaw("Vertical");
+
+    if (lockOnCamera)
+    {
+      HandleWalkingStanceAnimations(horizontal, vertical);
+    }
+
     return new Vector3(horizontal, 0f, vertical).normalized;
+  }
+
+  private void RotateTowardsLockedTarget()
+  {
+    if (lockedTargetTransform)
+    {
+      Vector3 direction = lockedTargetTransform.position - transform.position;
+      Quaternion rotation = Quaternion.LookRotation(direction);
+      transform.rotation = rotation;
+    }
   }
 
   // CAMERA
@@ -109,17 +124,26 @@ public class PlayerController : NetworkBehaviour
     if (lockOnCamera)
     {
       cinemachineAnimator.Play("LockOnCamera");
-      animationController.StanceAnimTransition();
+      animationController.Stance();
       movementSpeed = 1f;
     }
     else
     {
       cinemachineAnimator.Play("ThirdPersonCamera");
-      animationController.NoStanceAnimTransition();
+      animationController.NotStance();
       movementSpeed = 3f;
     }
   }
 
+  private void GetLockedTarget() // this needs to be changed for multiple targets
+  {
+    for (int i = 0; i < targetGroupManager.targetGroup.m_Targets.Length; i++)
+    {
+      lockedTargetTransform = targetGroupManager.targetGroup.m_Targets[i].target.transform;
+    }
+  }
+
+  // NETWORKING
   public override void OnStartClient()
   {
     playerManager = GameObject.Find("Player Manager").GetComponent<PlayerManager>();
@@ -142,21 +166,16 @@ public class PlayerController : NetworkBehaviour
     }
   }
 
-  private void GetLockedTarget() // this needs to be changed for multiple targets
+  // ANIMATIONS
+  void HandleWalkingStanceAnimations(float horizontal, float vertical)
   {
-    for (int i = 0; i < targetGroupManager.targetGroup.m_Targets.Length; i++)
+    if (horizontal > 0)
     {
-      lockedTargetTransform = targetGroupManager.targetGroup.m_Targets[i].target.transform;
+      animationController.WalkingRight();
     }
-  }
-
-  private void RotateTowardsLockedTarget()
-  {
-    if (lockedTargetTransform)
+    else if (horizontal < 0)
     {
-      Vector3 direction = lockedTargetTransform.position - transform.position;
-      Quaternion rotation = Quaternion.LookRotation(direction);
-      transform.rotation = rotation;
+      animationController.WalkingLeft();
     }
   }
 
