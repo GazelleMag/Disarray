@@ -169,14 +169,10 @@ public class PlayerController : NetworkBehaviour
   // ANIMATIONS
   void HandleWalkingStanceAnimations(float horizontal, float vertical)
   {
-    if (horizontal > 0)
-    {
-      animationController.WalkingRight();
-    }
-    else if (horizontal < 0)
-    {
-      animationController.WalkingLeft();
-    }
+    if (vertical > 0) { animationController.WalkingForward(); }
+    if (vertical < 0) { animationController.WalkingBackwards(); }
+    if (horizontal > 0) { animationController.WalkingRight(); }
+    if (horizontal < 0) { animationController.WalkingLeft(); }
   }
 
 }

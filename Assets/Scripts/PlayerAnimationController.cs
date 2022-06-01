@@ -29,14 +29,36 @@ public class PlayerAnimationController : MonoBehaviour
     playerAnimator.SetBool("Stance", false);
   }
 
-  public void WalkingLeft()
+  public void WalkingForward()
   {
-    playerAnimator.SetBool("WalkingLeft", true);
+    playerAnimator.SetBool("WalkingForward", true);
+    playerAnimator.SetBool("WalkingBackwards", false);
+    playerAnimator.SetBool("WalkingRight", false);
+    playerAnimator.SetBool("WalkingLeft", false);
+  }
+
+  public void WalkingBackwards()
+  {
+    playerAnimator.SetBool("WalkingForward", false);
+    playerAnimator.SetBool("WalkingBackwards", true);
+    playerAnimator.SetBool("WalkingRight", false);
+    playerAnimator.SetBool("WalkingLeft", false);
   }
 
   public void WalkingRight()
   {
+    playerAnimator.SetBool("WalkingForward", false);
+    playerAnimator.SetBool("WalkingBackwards", false);
+    playerAnimator.SetBool("WalkingRight", true);
     playerAnimator.SetBool("WalkingLeft", false);
+  }
+
+  public void WalkingLeft()
+  {
+    playerAnimator.SetBool("WalkingForward", false);
+    playerAnimator.SetBool("WalkingBackwards", false);
+    playerAnimator.SetBool("WalkingRight", false);
+    playerAnimator.SetBool("WalkingLeft", true);
   }
 
   /*public void IdleAnimTransition()
