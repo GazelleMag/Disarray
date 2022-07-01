@@ -5,16 +5,21 @@ using Mirror;
 
 public class PlayerManager : MonoBehaviour
 {
-  public static List<GameObject> playersList = new List<GameObject>();
+  public static List<int> playerConnectionIds = new List<int>();
 
-  public void AddPlayer(GameObject player)
+  public void AddPlayer(int connectionId)
   {
-    playersList.Add(player);
+    playerConnectionIds.Add(connectionId);
   }
 
-  public void RemovePlayer(GameObject player)
+  public void RemovePlayer(int connectionId)
   {
-    playersList.Remove(player);
+    playerConnectionIds.Remove(connectionId);
+  }
+
+  public List<int> GetPlayersList()
+  {
+    return playerConnectionIds;
   }
 }
 

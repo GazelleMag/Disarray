@@ -1,6 +1,7 @@
 using UnityEngine;
 using Mirror;
 using Cinemachine;
+using System.Collections.Generic;
 
 public class PlayerController : NetworkBehaviour
 {
@@ -25,6 +26,13 @@ public class PlayerController : NetworkBehaviour
   private Transform lockedTargetTransform;
   private PlayerManager playerManager;
 
+  [SyncVar]
+  public int health = 100;
+
+  //
+  //public GameObject projectile;
+  //float projectileSpeed = 100f;
+
   void Start()
   {
     InitializeCameraProperties();
@@ -44,6 +52,12 @@ public class PlayerController : NetworkBehaviour
       if (lockOnCamera)
       {
         RotateTowardsLockedTarget();
+      }
+
+      if (Input.GetMouseButtonDown(0))
+      {
+        Debug.Log("Punching!");
+        animationController.Punching();
       }
     }
   }
@@ -126,6 +140,8 @@ public class PlayerController : NetworkBehaviour
       cinemachineAnimator.Play("LockOnCamera");
       animationController.Stance();
       movementSpeed = 1f;
+      //CmdTakeDamage(10);
+      //CmdInflictDamage();
     }
     else
     {
@@ -144,27 +160,70 @@ public class PlayerController : NetworkBehaviour
   }
 
   // NETWORKING
-  public override void OnStartClient()
+  public override void OnStartServer()
   {
     playerManager = GameObject.Find("Player Manager").GetComponent<PlayerManager>();
+    playerManager.AddPlayer(connectionToClient.connectionId);
+  }
+
+  public override void OnStopServer()
+  {
+    playerManager = GameObject.Find("Player Manager").GetComponent<PlayerManager>();
+    playerManager.RemovePlayer(connectionToClient.connectionId);
+  }
+
+  public override void OnStartClient()
+  {
+    //playerManager = GameObject.Find("Player Manager").GetComponent<PlayerManager>();
     targetGroupManager = GameObject.Find("TargetGroup").GetComponent<CinemachineTargetGroupManager>();
     if (!isLocalPlayer)
     {
-      playerManager.AddPlayer(gameObject);
       targetGroupManager.AddPlayer(transform);
     }
   }
 
   public override void OnStopClient()
   {
-    playerManager = GameObject.Find("Player Manager").GetComponent<PlayerManager>();
+    //playerManager = GameObject.Find("Player Manager").GetComponent<PlayerManager>();
     targetGroupManager = GameObject.Find("TargetGroup").GetComponent<CinemachineTargetGroupManager>();
     if (!isLocalPlayer)
     {
-      playerManager.RemovePlayer(gameObject);
       targetGroupManager.RemovePlayer(transform);
     }
   }
+
+  /*public void TakeDamage(int damage)
+  {
+    if (isServer)
+    {
+      health -= damage;
+      Debug.Log(connectionToClient + " current health: " + health);
+    }
+    else
+    {
+      CmdTakeDamage(damage);
+    }
+  }
+
+  [Command]
+  public void CmdTakeDamage(int damage)
+  {
+    TakeDamage(damage);
+  }
+
+  [Command]
+  public void CmdInflictDamage()
+  {
+    List<int> playerConnectionIds = playerManager.GetPlayersList();
+    foreach (var playerConnectionId in playerConnectionIds)
+    {
+      if (connectionToClient.connectionId != playerConnectionId)
+      {
+        Debug.Log(playerConnectionId + " is my target!");
+      }
+    }
+
+  }*/
 
   // ANIMATIONS
   void HandleWalkingStanceAnimations(float horizontal, float vertical)
@@ -174,5 +233,16 @@ public class PlayerController : NetworkBehaviour
     if (horizontal > 0) { animationController.WalkingRight(); }
     if (horizontal < 0) { animationController.WalkingLeft(); }
   }
+
+  //
+  /*private void Shoot()
+  {
+
+    GameObject tempProjectile = Instantiate(projectile, transform.position, transform.rotation);
+    Physics.IgnoreCollision(tempProjectile.GetComponent<Collider>(), GetComponent<Collider>());
+    Rigidbody tempRigidBodyProjectile = tempProjectile.GetComponent<Rigidbody>();
+    tempRigidBodyProjectile.AddForce(tempRigidBodyProjectile.transform.forward * projectileSpeed);
+    Destroy(tempProjectile, 2f);
+  }*/
 
 }

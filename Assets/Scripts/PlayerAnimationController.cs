@@ -61,23 +61,8 @@ public class PlayerAnimationController : MonoBehaviour
     playerAnimator.SetBool("WalkingLeft", true);
   }
 
-  /*public void IdleAnimTransition()
+  public void Punching()
   {
-    playerAnimator.SetBool("Walking", false);
+    playerAnimator.SetTrigger("Punching");
   }
-
-  public void WalkingAnimTransition()
-  {
-    playerAnimator.SetBool("Walking", true);
-  }
-
-  public void StanceAnimTransition()
-  {
-    playerAnimator.SetBool("Stance", true);
-  }
-
-  public void NoStanceAnimTransition()
-  {
-    playerAnimator.SetBool("Stance", false);
-  }*/
 }

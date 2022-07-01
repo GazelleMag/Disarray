@@ -111,6 +111,8 @@ MonoBehaviour:
   lcam: {fileID: 0}
   scam: {fileID: 0}
   targetGroupManager: {fileID: 0}
+  health: 100
+  projectile: {fileID: 2700441707576684935, guid: f2347d83fb920d346b76c3b4834a225e, type: 3}
 --- !u!143 &3988133485223847116
 CharacterController:
   m_ObjectHideFlags: 0
