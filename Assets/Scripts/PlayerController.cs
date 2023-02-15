@@ -1,7 +1,8 @@
 using UnityEngine;
 using Mirror;
 using Cinemachine;
-using System.Collections.Generic;
+using System.Runtime.InteropServices;
+using System.Collections;
 
 public class PlayerController : NetworkBehaviour
 {
@@ -13,29 +14,30 @@ public class PlayerController : NetworkBehaviour
   public GameObject vcam;
   public GameObject lcam;
   public GameObject scam;
-
   private CinemachineFreeLook freeLookCam;
   private CinemachineVirtualCamera lockOnCam;
-
-  private float movementSpeed = 3f;
-  private float turnSmoothTime = 0.1f;
-  float turnSmoothVelocity;
   private bool lockOnCamera;
 
   public CinemachineTargetGroupManager targetGroupManager;
   private Transform lockedTargetTransform;
+
   private PlayerManager playerManager;
 
+  private float movementSpeed = 3f;
+  private float turnSmoothTime = 0.1f;
+  float turnSmoothVelocity;
   [SyncVar]
   public int health = 100;
-
-  //
-  //public GameObject projectile;
-  //float projectileSpeed = 100f;
+  private bool canGetPunched = true;
+  public Transform leftHandHitbox, rightHandHitbox;
+  public float handHitboxRange = 0.075f;
 
   void Start()
   {
-    InitializeCameraProperties();
+    if (isLocalPlayer)
+    {
+      InitializeCameraProperties();
+    }
   }
 
   void Update()
@@ -56,10 +58,24 @@ public class PlayerController : NetworkBehaviour
 
       if (Input.GetMouseButtonDown(0))
       {
-        Debug.Log("Punching!");
-        animationController.Punching();
+        if (lockOnCamera)
+        {
+          Punch();
+        }
+
       }
+
+      if (animationController.punchingAnimationIsPlaying())
+      {
+        CmdEnableHandColliders();
+      }
+      else
+      {
+        CmdDisableHandColliders();
+      }
+      Debug.Log("Current health: " + health);
     }
+
   }
 
   // MOVEMENT
@@ -116,12 +132,9 @@ public class PlayerController : NetworkBehaviour
     cinemachineAnimator = scam.GetComponent<Animator>();
     lockOnCamera = false;
 
-    if (isLocalPlayer)
-    {
-      freeLookCam.LookAt = transform;
-      freeLookCam.Follow = transform;
-      lockOnCam.Follow = transform;
-    }
+    freeLookCam.LookAt = transform;
+    freeLookCam.Follow = transform;
+    lockOnCam.Follow = transform;
   }
 
   private Vector3 GetPlayerCamDirection(Vector3 inputDirection)
@@ -140,8 +153,6 @@ public class PlayerController : NetworkBehaviour
       cinemachineAnimator.Play("LockOnCamera");
       animationController.Stance();
       movementSpeed = 1f;
-      //CmdTakeDamage(10);
-      //CmdInflictDamage();
     }
     else
     {
@@ -163,67 +174,32 @@ public class PlayerController : NetworkBehaviour
   public override void OnStartServer()
   {
     playerManager = GameObject.Find("Player Manager").GetComponent<PlayerManager>();
-    playerManager.AddPlayer(connectionToClient.connectionId);
+    playerManager.AddPlayer(connectionToClient);
   }
 
   public override void OnStopServer()
   {
-    playerManager = GameObject.Find("Player Manager").GetComponent<PlayerManager>();
-    playerManager.RemovePlayer(connectionToClient.connectionId);
+    playerManager.RemovePlayer(connectionToClient);
   }
 
   public override void OnStartClient()
   {
-    //playerManager = GameObject.Find("Player Manager").GetComponent<PlayerManager>();
     targetGroupManager = GameObject.Find("TargetGroup").GetComponent<CinemachineTargetGroupManager>();
     if (!isLocalPlayer)
     {
+      SetPlayerLayer("Enemy");
       targetGroupManager.AddPlayer(transform);
     }
   }
 
   public override void OnStopClient()
   {
-    //playerManager = GameObject.Find("Player Manager").GetComponent<PlayerManager>();
     targetGroupManager = GameObject.Find("TargetGroup").GetComponent<CinemachineTargetGroupManager>();
     if (!isLocalPlayer)
     {
       targetGroupManager.RemovePlayer(transform);
     }
   }
-
-  /*public void TakeDamage(int damage)
-  {
-    if (isServer)
-    {
-      health -= damage;
-      Debug.Log(connectionToClient + " current health: " + health);
-    }
-    else
-    {
-      CmdTakeDamage(damage);
-    }
-  }
-
-  [Command]
-  public void CmdTakeDamage(int damage)
-  {
-    TakeDamage(damage);
-  }
-
-  [Command]
-  public void CmdInflictDamage()
-  {
-    List<int> playerConnectionIds = playerManager.GetPlayersList();
-    foreach (var playerConnectionId in playerConnectionIds)
-    {
-      if (connectionToClient.connectionId != playerConnectionId)
-      {
-        Debug.Log(playerConnectionId + " is my target!");
-      }
-    }
-
-  }*/
 
   // ANIMATIONS
   void HandleWalkingStanceAnimations(float horizontal, float vertical)
@@ -234,15 +210,101 @@ public class PlayerController : NetworkBehaviour
     if (horizontal < 0) { animationController.WalkingLeft(); }
   }
 
-  //
-  /*private void Shoot()
+  // COMBAT
+  public void Punch()
   {
+    animationController.Punching();
+  }
 
-    GameObject tempProjectile = Instantiate(projectile, transform.position, transform.rotation);
-    Physics.IgnoreCollision(tempProjectile.GetComponent<Collider>(), GetComponent<Collider>());
-    Rigidbody tempRigidBodyProjectile = tempProjectile.GetComponent<Rigidbody>();
-    tempRigidBodyProjectile.AddForce(tempRigidBodyProjectile.transform.forward * projectileSpeed);
-    Destroy(tempProjectile, 2f);
-  }*/
+  [Command]
+  private void CmdEnableHandColliders()
+  {
+    RpcEnableHandColliders();
+  }
 
+  [Command]
+  private void CmdDisableHandColliders()
+  {
+    RpcDisableHandColliders();
+  }
+
+  [ClientRpc]
+  private void RpcEnableHandColliders()
+  {
+    leftHandHitbox.gameObject.GetComponent<SphereCollider>().enabled = true;
+    rightHandHitbox.gameObject.GetComponent<SphereCollider>().enabled = true;
+  }
+
+  [ClientRpc]
+  private void RpcDisableHandColliders()
+  {
+    leftHandHitbox.gameObject.GetComponent<SphereCollider>().enabled = false;
+    rightHandHitbox.gameObject.GetComponent<SphereCollider>().enabled = false;
+  }
+
+  [Client]
+  private void TakeDamage(int damage)
+  {
+    CmdSyncHP(damage);
+  }
+
+  [Command]
+  private void CmdSyncHP(int damage)
+  {
+    health -= damage;
+  }
+
+  IEnumerator WaitToGetPunched()
+  {
+    yield return new WaitForSeconds(1f);
+    canGetPunched = true;
+  }
+
+  private void OnTriggerEnter(Collider collision)
+  {
+    if (isLocalPlayer && canGetPunched)
+    {
+      canGetPunched = false;
+      TakeDamage(10);
+      StartCoroutine(WaitToGetPunched()); // doing this so a punch doesn't trigger collision twice
+    }
+  }
+
+  // MISC
+  private void SetPlayerLayer(string layerName)
+  {
+    int layer = LayerMask.NameToLayer(layerName);
+    gameObject.layer = layer;
+    if (!isClientOnly) // this distinction must be made because find game objects with tag on server finds every player's hand hitboxes
+    {
+      int connectionId = gameObject.GetComponent<NetworkIdentity>().connectionToClient.connectionId;
+      SetPlayerHandHitboxesLayer(layer, connectionId);
+    }
+    else
+    {
+      SetPlayerHandHitboxesLayer(layer);
+    }
+  }
+
+  private void SetPlayerHandHitboxesLayer(int layer, [Optional] int connectionId)
+  {
+    GameObject[] hitboxes = GameObject.FindGameObjectsWithTag("Hitbox");
+    if (connectionId != 0)
+    {
+      foreach (GameObject hitbox in hitboxes)
+      {
+        if (connectionId == hitbox.transform.root.gameObject.GetComponent<NetworkIdentity>().connectionToClient.connectionId)
+        {
+          hitbox.gameObject.layer = layer;
+        }
+      }
+    }
+    else
+    {
+      foreach (GameObject hitbox in hitboxes)
+      {
+        hitbox.gameObject.layer = layer;
+      }
+    }
+  }
 }

@@ -3,23 +3,23 @@ using System.Collections.Generic;
 using UnityEngine;
 using Mirror;
 
-public class PlayerManager : MonoBehaviour
+public class PlayerManager : NetworkBehaviour
 {
-  public static List<int> playerConnectionIds = new List<int>();
+  public static List<NetworkConnection> playerConnectionList = new List<NetworkConnection>();
 
-  public void AddPlayer(int connectionId)
+  public void AddPlayer(NetworkConnection connection)
   {
-    playerConnectionIds.Add(connectionId);
+    playerConnectionList.Add(connection);
   }
 
-  public void RemovePlayer(int connectionId)
+  public void RemovePlayer(NetworkConnection connection)
   {
-    playerConnectionIds.Remove(connectionId);
+    playerConnectionList.Remove(connection);
   }
 
-  public List<int> GetPlayersList()
+  public List<NetworkConnection> GetPlayerConnections()
   {
-    return playerConnectionIds;
+    return playerConnectionList;
   }
 }
 

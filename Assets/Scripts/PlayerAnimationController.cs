@@ -1,13 +1,10 @@
 using UnityEngine;
+using Mirror;
 
-public class PlayerAnimationController : MonoBehaviour
+public class PlayerAnimationController : NetworkBehaviour
 {
   public Animator playerAnimator;
-
-  void Start()
-  {
-    playerAnimator = GetComponent<Animator>();
-  }
+  public NetworkAnimator networkAnimator;
 
   public void Walking()
   {
@@ -63,6 +60,11 @@ public class PlayerAnimationController : MonoBehaviour
 
   public void Punching()
   {
-    playerAnimator.SetTrigger("Punching");
+    networkAnimator.SetTrigger("Punching");
+  }
+
+  public bool punchingAnimationIsPlaying()
+  {
+    return networkAnimator.animator.GetCurrentAnimatorStateInfo(0).IsName("Punching") ? true : false;
   }
 }
