@@ -26,8 +26,10 @@ public class PlayerController : NetworkBehaviour
   private float movementSpeed = 3f;
   private float turnSmoothTime = 0.1f;
   float turnSmoothVelocity;
-  [SyncVar]
-  public int health = 100;
+  public int maxHealth = 100;
+  [SyncVar(hook = nameof(HealthChange))]
+  public int currentHealth;
+  public HealthBar healthBar;
   private bool canGetPunched = true;
   public Transform leftHandHitbox, rightHandHitbox;
   public float handHitboxRange = 0.075f;
@@ -38,6 +40,8 @@ public class PlayerController : NetworkBehaviour
     {
       InitializeCameraProperties();
     }
+    currentHealth = maxHealth;
+    healthBar.SetMaxHealth(maxHealth);
   }
 
   void Update()
@@ -73,7 +77,7 @@ public class PlayerController : NetworkBehaviour
       {
         CmdDisableHandColliders();
       }
-      Debug.Log("Current health: " + health);
+      Debug.Log("Current health: " + currentHealth);
     }
 
   }
@@ -242,24 +246,6 @@ public class PlayerController : NetworkBehaviour
     rightHandHitbox.gameObject.GetComponent<SphereCollider>().enabled = false;
   }
 
-  [Client]
-  private void TakeDamage(int damage)
-  {
-    CmdSyncHP(damage);
-  }
-
-  [Command]
-  private void CmdSyncHP(int damage)
-  {
-    health -= damage;
-  }
-
-  IEnumerator WaitToGetPunched()
-  {
-    yield return new WaitForSeconds(1f);
-    canGetPunched = true;
-  }
-
   private void OnTriggerEnter(Collider collision)
   {
     if (isLocalPlayer && canGetPunched)
@@ -268,6 +254,29 @@ public class PlayerController : NetworkBehaviour
       TakeDamage(10);
       StartCoroutine(WaitToGetPunched()); // doing this so a punch doesn't trigger collision twice
     }
+  }
+
+  [Client]
+  private void TakeDamage(int damage)
+  {
+    CmdSyncHealth(damage);
+  }
+
+  [Command]
+  private void CmdSyncHealth(int damage)
+  {
+    currentHealth -= damage;
+  }
+
+  private void HealthChange(int oldHealth, int newHealth)
+  {
+    healthBar.SetHealth(newHealth);
+  }
+
+  IEnumerator WaitToGetPunched()
+  {
+    yield return new WaitForSeconds(1f);
+    canGetPunched = true;
   }
 
   // MISC
